@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/bsm/redislock"
-	"github.com/caddyserver/caddy/caddytls"
 	"github.com/go-redis/redis"
 	"github.com/mholt/certmagic"
 )
@@ -36,10 +35,6 @@ type RedisStorage struct {
 type StorageData struct {
 	Value    []byte    `json:"value"`
 	Modified time.Time `json:"modified"`
-}
-
-func init() {
-	caddytls.RegisterClusterPlugin("redis", constructRedisClusterPlugin)
 }
 
 // helper function to prefix key
