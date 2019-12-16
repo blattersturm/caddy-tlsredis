@@ -1,7 +1,6 @@
 package storageredis
 
 import (
-	"crypto/tls"
 	"fmt"
 	"path"
 	"strings"
@@ -25,7 +24,7 @@ const (
 
 // RedisStorage contain Redis client, and plugin option
 type RedisStorage struct {
-	Client       *redis.Client
+	Client       redis.UniversalClient
 	ClientLocker *redislock.Client
 	Options      *Options
 	locks        map[string]*redislock.Lock
@@ -46,20 +45,15 @@ func (rd *RedisStorage) prefixKey(key string) string {
 func GetRedisStorage() (*RedisStorage, error) {
 	opt := GetOptions()
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:         opt.Host + ":" + opt.Port,
+	redisClient := redis.NewUniversalClient(&redis.UniversalOptions{
+		Addrs:        []string{opt.Host + ":" + opt.Port},
 		Password:     opt.Password,
 		DB:           opt.DB,
+		MasterName:   "mymaster",
 		DialTimeout:  time.Second * time.Duration(opt.Timeout),
 		ReadTimeout:  time.Second * time.Duration(opt.Timeout),
 		WriteTimeout: time.Second * time.Duration(opt.Timeout),
 	})
-
-	if opt.TLSEnabled {
-		redisClient.Options().TLSConfig = &tls.Config{
-			InsecureSkipVerify: opt.TLSInsecure,
-		}
-	}
 
 	_, err := redisClient.Ping().Result()
 	if err != nil {
